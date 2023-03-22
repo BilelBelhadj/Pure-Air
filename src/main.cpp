@@ -9,7 +9,8 @@ Version   : 0.0.1
 #include <Adafruit_AHTX0.h> 
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-
+#include "WIFIConnector_MKR1000.h"
+#include "MQTTConnector.h" 
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
@@ -44,6 +45,9 @@ void setup(){
     //effacer l'ecran et configurer le couleur
     display.clearDisplay();
     display.setTextColor(WHITE);
+    //connecter sur internet et MQTT
+    wifiConnect();              
+    MQTTConnect(); 
 
 }
 
@@ -84,6 +88,12 @@ void loop(){
     display.setTextSize(2);
     display.setCursor(0, 45);
     display.print(String(carbone));
+
+    //envoyer les donnees sur thingsboard
+    appendPayload("CO2", carbone);
+    appendPayload("Temperature", temp.temperature);
+    appendPayload("Himidite", humidity.relative_humidity);
+    sendPayload();
    
     delay(5000);
 }
