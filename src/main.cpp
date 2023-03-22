@@ -25,7 +25,7 @@ const int FAN = 1;      //la broche relier au relai pour activer le ventilateur
 
 //Variables
 float tmperature = 0, humidite = 0;
-int   carbone = 0, etatFan = 0;
+int   carbone = 0;
 
 
 void setup()
@@ -70,14 +70,32 @@ void loop()
 
 
     /******************************* Gerer les actuateurs *******************************/
-    if (tmperature > 26)
+    if (tmperature > 25)
     {
         etatFan = 1;
+        digitalWrite(FAN, HIGH);
     }else{
         etatFan = 0;
+        digitalWrite(FAN, LOW);
     }
 
-
+    if(etatFanStr == "true"){
+        if (digitalRead(FAN) == 1)
+        {
+            Serial.println("Le filtre est deja activee");
+        }else{
+            Serial.println("Activation....Done!");
+            digitalWrite(FAN, HIGH);
+        } 
+    }else{
+        if (digitalRead(FAN) == 0)
+        {
+            Serial.println("Le filtre est deja arretee");
+        }else{
+            Serial.println("desactivation....Done!");
+            digitalWrite(FAN, LOW);
+        } 
+    }
 
     /******************************* Affichage des donnees *******************************/
     display.clearDisplay();  //effacer l'ecran
@@ -130,5 +148,5 @@ void loop()
     appendPayload("Filtre", etatFan);
     sendPayload();
    
-    delay(5000);
+    delay(3000);
 }

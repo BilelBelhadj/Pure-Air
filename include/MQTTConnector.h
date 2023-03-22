@@ -26,8 +26,10 @@ const char DEVICE_ID[]    = SECRET_DEVICE_ID;     // Numéro d'indentification d
 
 MQTTClient ClientMQTT;      // Création d'un client MQTT pour l'échange de donnée entre l'objet IDO et le broker MQTT
 
-
 String Payload ="{";      // Chaine de caractère qui contiendra le message envoyer de l'objet vers thingsboard
+
+String  etatFanStr = "", valeurDeclanche = "";
+int     etatFan = 0;
 
 //Recieve msg
 void messageReceived(String &topic, String &payload) {
@@ -35,6 +37,20 @@ void messageReceived(String &topic, String &payload) {
   Serial.println("Message Recu");
   Serial.println(payload);          //imprimer le message recue
   Serial.println(topic);
+
+  //verifier si le RPC contient l etat de FAN
+  if(payload.substring(payload.indexOf(':') + 2 == 'a')){
+    etatFanStr = payload.substring(payload.lastIndexOf(':') + 1 ,payload.indexOf('}'));
+    Serial.println(etatFanStr);
+  }
+
+  //verifier si le RPC contient la valeur d'activation du FAN
+  if(payload.substring(payload.indexOf(':') + 2 == 'd')){
+    valeurDeclanche = payload.substring(payload.lastIndexOf(':') + 1 ,payload.indexOf('}'));
+    Serial.println(valeurDeclanche);
+  }
+
+  Serial.println(etatFanStr);
 
 }
 

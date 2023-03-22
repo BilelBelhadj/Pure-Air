@@ -4,6 +4,9 @@ Modifier les paramètre WIFI pour le réseau auquels votre objets doit se branch
 */
 
 
+//#define WIFI_SECRET_SSID "BELL369"
+//#define WIFI_SECRET_PASS "E39E7FC92339"
+
 #define WIFI_SECRET_SSID "UNIFI_IDO2"
 #define WIFI_SECRET_PASS "99Bidules!"
 
@@ -12,7 +15,7 @@ Information nécessaire pour le branchement a un Broker MQTT
 Dans le cadre du cours AIIA1013, ne modifié pas cet information
 */
 
-#define SECRET_MQTT_SERVER_IP "192.168.2.13"
+#define SECRET_MQTT_SERVER_IP "192.168.2.20"
 #define SECRET_MQTT_SERVER_PORT 1883
 
 /*
