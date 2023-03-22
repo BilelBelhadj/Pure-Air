@@ -16,7 +16,7 @@ Version   : 0.0.1
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 
 Adafruit_AHTX0 aht;
-sensors_event_t humidity, temp;
+sensors_event_t hum, temp;
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 //Constants
@@ -24,8 +24,8 @@ const int CO_SEN = A3;
 const int FAN = 1;      //la broche relier au relai pour activer le ventilateur
 
 //Variables
-float tmp = 0, hum = 0;
-int   carbone = 0, etat = 0;
+float tmperature = 0, humidite = 0;
+int   carbone = 0, etatFan = 0;
 
 
 void setup()
@@ -62,19 +62,19 @@ void loop()
 
     /******************************* Capture des donnees *******************************/
     //AHT20 data 
-    aht.getEvent(&humidity, &temp);
-    tmp = temp.temperature;
-    hum = humidity.relative_humidity;
+    aht.getEvent(&hum, &temp);
+    tmperature = temp.temperature;
+    humidite = hum.relative_humidity;
     carbone = analogRead(CO_SEN);       //CO data
 
 
 
     /******************************* Gerer les actuateurs *******************************/
-    if (tmp > 26)
+    if (tmperature > 26)
     {
-        digitalWrite(FAN, HIGH);
+        etatFan = 1;
     }else{
-        digitalWrite(FAN, LOW);
+        etatFan = 0;
     }
 
 
@@ -88,7 +88,7 @@ void loop()
     display.print("Temp:");
     display.setTextSize(2);
     display.setCursor(0,10);
-    display.print(String(tmp));
+    display.print(String(tmperature));
     
     //display humidity
     display.setTextSize(1);
@@ -96,7 +96,7 @@ void loop()
     display.print("HUM: ");
     display.setTextSize(2);
     display.setCursor(65, 10);
-    display.print(String(hum));
+    display.print(String(humidite));
 
     //display quantite du CO2
     display.setTextSize(1);
@@ -106,13 +106,28 @@ void loop()
     display.setCursor(0, 45);
     display.print(String(carbone));
 
+    //display statu du filtre
+    display.setTextSize(1);
+    display.setCursor(65, 35);
+    display.print("Filtre: ");
+    display.setTextSize(2);
+    display.setCursor(65, 45);
+    
+    if (etatFan == 1)
+    {
+        display.print(String("ON"));
+    }else{
+        display.print(String("OFF"));
+    }
+    display.display(); 
 
 
     /******************************* envoyer les donnees sur thingsboard *******************************/
 
     appendPayload("CO2", carbone);
-    appendPayload("Temperature", temp.temperature);
-    appendPayload("Himidite", humidity.relative_humidity);
+    appendPayload("Temperature", tmperature);
+    appendPayload("Himidite", humidite);
+    appendPayload("Filtre", etatFan);
     sendPayload();
    
     delay(5000);
