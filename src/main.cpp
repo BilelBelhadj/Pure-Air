@@ -29,42 +29,46 @@ Adafruit_CCS811 ccs;
 
 //Constants
 const int CO_SEN = A3;
-const int FAN = 1;      //la broche relier au relai pour activer le ventilateur
+const int FAN = 6;      //la broche relier au relai pour activer le ventilateur
 
 //Variables
-float tmperature = 0, humidite = 0;
-int   co2 = 0, tvoc = 0;
+float tmperature = 1000, humidite = 1000;
+int   co2 = 60, tvoc = 0;
 long  oldTime = 0, newTime = 0;
+
 
 void setup()
 {
     Serial.begin(9600);     //demarrer le moniteur serie avec le vitesse 9600
-    pinMode(FAN, OUTPUT);   //mode de fonctionnement de broche
 
+    wifiConnect();                  //connecter sur internet et MQTT   
+    MQTTConnect();
+
+    pinMode(FAN, OUTPUT);   //mode de fonctionnement de broche
+     
     if (aht.begin()) {      //Verifier l'existence du AHT20
         Serial.println("Found AHT20");
     } else {
         Serial.println("Didn't find AHT20");
     }
-
+   
     if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {      //verifier l'existance du l'ecran OLED
         Serial.println(F("SSD1306 allocation failed"));
         for(;;);
+    }else{
+        Serial.println("Screen checked");
     }
 
     Serial.println("CCS811 test");  //Co2 sensor check
     if(!ccs.begin()){
         Serial.println("Failed to start sensor! Please check your wiring.");
         while(1);
-    }
-    
-    while(!ccs.available());        // Wait for the sensor to be ready
-    
+    }    
+
     display.clearDisplay();         //effacer l'ecran et configurer le couleur
     display.setTextColor(WHITE);
-    
-    wifiConnect();                  //connecter sur internet et MQTT   
-    MQTTConnect();
+
+    while(!ccs.available());        // Wait for the sensor to be ready  
 }
 
 
@@ -73,7 +77,7 @@ void loop()
     ClientMQTT.loop();     //continuer a ecouter s'il y'a des RPC
 
     newTime = millis();
-    if (newTime - oldTime > 4000){
+    if (newTime - oldTime > 2000){
         oldTime = newTime;
 
         
@@ -82,6 +86,7 @@ void loop()
         aht.getEvent(&hum, &temp);
         tmperature = temp.temperature;
         humidite = hum.relative_humidity;
+        
         
         if(ccs.available()){
             if(!ccs.readData()){
@@ -94,7 +99,8 @@ void loop()
 
 
         /******************************* Gerer les actuateurs *******************************/
-        if (tmperature > 26 || etatFanStr == "true"){         //activer le filtre selon la tempperature
+        
+        if (tmperature > 26 || etatFanStr == "true" || co2 > 1500){         //activer le filtre selon la tempperature
             etatFan = 1;
             digitalWrite(FAN, HIGH);
         }else{
@@ -104,6 +110,7 @@ void loop()
 
 
         /******************************* Affichage des donnees *******************************/
+        
         display.clearDisplay();  //effacer l'ecran
 
         //display temperature
@@ -144,13 +151,19 @@ void loop()
             display.print(String("OFF"));
         }
         display.display(); 
-
-
+        
+        Serial.println("TMP");
+        Serial.println(tmperature);
+        Serial.println("HUM");
+        Serial.println(humidite);
+        Serial.println("CO2");
+        Serial.println(co2);
         /******************************* envoyer les donnees sur thingsboard *******************************/
         appendPayload("CO2", co2);
         appendPayload("Temperature", tmperature);
         appendPayload("Himidite", humidite);
         appendPayload("Filtre", etatFan);
         sendPayload();
+        
     }
 }
