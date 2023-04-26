@@ -1,33 +1,16 @@
-/*
-SSID du WIFI ainsi que le mot de passe
-Modifier les paramètre WIFI pour le réseau auquels votre objets doit se brancher
-*/
+#include "secretVars.h"
 
+//wifi settings
+#define WIFI_SECRET_SSID wifiName             //PC hotspot
+#define WIFI_SECRET_PASS wifiPassword         //wifi password
 
-#define WIFI_SECRET_SSID "BELL369"        //Home
-#define WIFI_SECRET_PASS "E39E7FC92339"
+//mqtt settings
+#define SECRET_MQTT_SERVER_IP mqttIP
+#define SECRET_MQTT_SERVER_PORT port
 
-//#define WIFI_SECRET_SSID "T"              //PC hotspot
-//#define WIFI_SECRET_PASS "25569556"
-
-//#define WIFI_SECRET_SSID "UNIFI_IDO2"              //Classe
-//#define WIFI_SECRET_PASS "99Bidules!"
-
-/*
-Information nécessaire pour le branchement a un Broker MQTT
-Dans le cadre du cours AIIA1013, ne modifié pas cet information
-*/
-
-#define SECRET_MQTT_SERVER_IP "192.168.2.64"
-#define SECRET_MQTT_SERVER_PORT 1883
-
-/*
-Détails sur l'indentification de l'objet
-Cette information provient de l'objet virtuel créer sur le serveur Thingsbord
-*/
-
-#define SECRET_TOKEN  "oMM4hRBMaBIILDWxUdaD"
-#define SECRET_DEVICE_ID "f9618130-b981-11ed-8493-232017e6bddf"
+//device settings 
+#define SECRET_TOKEN  deviceToken
+#define SECRET_DEVICE_ID deviceId
 
 
 

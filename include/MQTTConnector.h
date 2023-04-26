@@ -26,10 +26,8 @@ const char DEVICE_ID[]    = SECRET_DEVICE_ID;     // Numéro d'indentification d
 
 MQTTClient ClientMQTT;      // Création d'un client MQTT pour l'échange de donnée entre l'objet IDO et le broker MQTT
 
-String Payload ="{";      // Chaine de caractère qui contiendra le message envoyer de l'objet vers thingsboard
-
-String  etatFanStr = "", valDeclanchCO2Str = "", valDeclanchTmpStr;
-int     etatFan = 0, valDeclanchCO2 = 0, valDeclanchTmp = 0;
+String Payload ="{", etatFanStr = "";      // Chaine de caractère qui contiendra le message envoyer de l'objet vers thingsboard
+int    etatFan = 0, valDeclanchCO2 = 0, valDeclanchTmp = 0;
 
 
 //Recieve msg
@@ -40,30 +38,31 @@ void messageReceived(String &topic, String &payload) {
   Serial.println(topic);
 
   //verifier si le RPC contient l etat de FAN
-  if(payload.substring(payload.indexOf(':') + 2 == 'a')){
-    etatFanStr = payload.substring(payload.lastIndexOf(':') + 1 ,payload.indexOf('}'));
+  int activationIndex = payload.indexOf("\"method\":\"activation\"");
+  if (activationIndex >= 0) {
+    etatFanStr = payload.substring(payload.indexOf("params\":", activationIndex) + 8 ,payload.indexOf('}', activationIndex));
+
+    Serial.print("Etat fan : ");
     Serial.println(etatFanStr);
   }
 
   //verifier si le RPC contient la valeur d'activation du FAN en fonction du CO2
-  if(payload.substring(payload.indexOf(':') + 2 == 'd')){
-    valDeclanchCO2Str = payload.substring(payload.lastIndexOf(':') + 1 ,payload.lastIndexOf('.'));
-    valDeclanchCO2 = valDeclanchCO2Str.toInt();
-
+  int declancheurIndex = payload.indexOf("\"method\":\"declancheur\"");
+  if (declancheurIndex >= 0) {
+    valDeclanchCO2 = (payload.substring(payload.indexOf("params\":", declancheurIndex) + 8 ,payload.indexOf('.', declancheurIndex))).toInt();
     Serial.print("Declancheur CO2 : ");
     Serial.println(valDeclanchCO2);
-  }else 
+  }
 
   //verifier si le RPC contient la valeur d'activation du FAN en fonction du temperature
-  if(payload.substring(payload.indexOf(':') + 2 == 't')){
-    valDeclanchTmpStr = payload.substring(payload.lastIndexOf(':') + 1 ,payload.lastIndexOf('.'));
-    valDeclanchTmp = valDeclanchTmpStr.toInt();
-
+  int temperatureIndex = payload.indexOf("\"method\":\"temperature\"");
+  if (temperatureIndex >= 0) {
+    valDeclanchTmp = (payload.substring(payload.indexOf("params\":", temperatureIndex) + 8 ,payload.indexOf('.', temperatureIndex))).toInt();
     Serial.print("Declancheur Temp : ");
     Serial.println(valDeclanchTmp);
   }
-
 }
+
 
 // Fonctionnalité de branchement utilisant le protocole MQTT
 void MQTTConnect() {
@@ -130,6 +129,5 @@ void sendPayload()
   Payload="{";
   
 }
-
 
 

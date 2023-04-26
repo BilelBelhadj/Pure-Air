@@ -1,6 +1,6 @@
 /*
 Auteur    : Bilel Belhadj
-Titre     : Air purification intelligent system
+Titre     : Pure-Air, systheme intelligent de purification d'air
 Date      : 06-02-2023
 Version   : 0.0.1
 */
@@ -29,8 +29,8 @@ Adafruit_CCS811 ccs;
 
 //Constants
 const int CO_SEN = A3;
-const int FAN = 6;      //la broche relier au relai pour activer le ventilateur
-const int DELAY = 10000;
+const int FAN = 6;          //la broche relier au relai pour activer le ventilateur
+const int DELAY = 5000;     //delay d'envoi de donnees
 
 //Variables
 float tmperature = 1000, humidite = 1000;
@@ -75,10 +75,10 @@ void setup()
 
 void loop()
 {
-    ClientMQTT.loop();     //continuer a ecouter s'il y'a des RPC
+    ClientMQTT.loop();     //continuer a ecouter s'il y'a des messages RPC
 
     newTime = millis();
-    if (newTime - oldTime > DELAY){
+    if (newTime - oldTime > DELAY){     //verifier si le delay choisi est passé
         oldTime = newTime;
 
         
@@ -88,7 +88,7 @@ void loop()
         tmperature = temp.temperature;
         humidite = hum.relative_humidity;
         
-        
+        //CCS811 data
         if(ccs.available()){
             if(!ccs.readData()){
                 co2 = ccs.geteCO2();
@@ -100,8 +100,7 @@ void loop()
 
 
         /******************************* Gerer les actuateurs *******************************/
-        
-        if (tmperature > 26 || etatFanStr == "true" || co2 > valDeclanchCO2){         //activer le filtre selon la tempperature
+        if (tmperature > valDeclanchTmp || etatFanStr == "true" || co2 > valDeclanchCO2){         //activer le filtre selon la tempperature
             etatFan = 1;
             digitalWrite(FAN, HIGH);
         }else{
@@ -110,8 +109,8 @@ void loop()
         }
 
 
-        /******************************* Affichage des donnees *******************************/
-        
+
+        /******************************* Affichage des donnees sur l'ecran OLED *******************************/
         display.clearDisplay();  //effacer l'ecran
 
         //display temperature
@@ -144,7 +143,6 @@ void loop()
         display.print("Filtre: ");
         display.setTextSize(2);
         display.setCursor(65, 45);
-        
         if (etatFan == 1)
         {
             display.print(String("ON"));
@@ -153,13 +151,16 @@ void loop()
         }
         display.display(); 
         
-        Serial.println("TMP");
+        //affichege les valeurs sur le moniteur serie
+        Serial.print("Temperature : ");
         Serial.println(tmperature);
-        Serial.println("HUM");
+        Serial.print("Humidite : ");
         Serial.println(humidite);
-        Serial.println("CO2");
+        Serial.print("CO2 : ");
         Serial.println(co2);
-        /******************************* envoyer les donnees sur thingsboard *******************************/
+
+
+        /******************************* Envoyer les donnees sur thingsboard *******************************/
         appendPayload("CO2", co2);
         appendPayload("Temperature", tmperature);
         appendPayload("Himidite", humidite);
