@@ -28,8 +28,9 @@ MQTTClient ClientMQTT;      // Création d'un client MQTT pour l'échange de don
 
 String Payload ="{";      // Chaine de caractère qui contiendra le message envoyer de l'objet vers thingsboard
 
-String  etatFanStr = "", valeurDeclanche = "";
-int     etatFan = 0;
+String  etatFanStr = "", valDeclanchCO2Str = "", valDeclanchTmpStr;
+int     etatFan = 0, valDeclanchCO2 = 0, valDeclanchTmp = 0;
+
 
 //Recieve msg
 void messageReceived(String &topic, String &payload) {
@@ -44,13 +45,23 @@ void messageReceived(String &topic, String &payload) {
     Serial.println(etatFanStr);
   }
 
-  //verifier si le RPC contient la valeur d'activation du FAN
+  //verifier si le RPC contient la valeur d'activation du FAN en fonction du CO2
   if(payload.substring(payload.indexOf(':') + 2 == 'd')){
-    valeurDeclanche = payload.substring(payload.lastIndexOf(':') + 1 ,payload.indexOf('}'));
-    Serial.println(valeurDeclanche);
-  }
+    valDeclanchCO2Str = payload.substring(payload.lastIndexOf(':') + 1 ,payload.lastIndexOf('.'));
+    valDeclanchCO2 = valDeclanchCO2Str.toInt();
 
-  Serial.println(etatFanStr);
+    Serial.print("Declancheur CO2 : ");
+    Serial.println(valDeclanchCO2);
+  }else 
+
+  //verifier si le RPC contient la valeur d'activation du FAN en fonction du temperature
+  if(payload.substring(payload.indexOf(':') + 2 == 't')){
+    valDeclanchTmpStr = payload.substring(payload.lastIndexOf(':') + 1 ,payload.lastIndexOf('.'));
+    valDeclanchTmp = valDeclanchTmpStr.toInt();
+
+    Serial.print("Declancheur Temp : ");
+    Serial.println(valDeclanchTmp);
+  }
 
 }
 

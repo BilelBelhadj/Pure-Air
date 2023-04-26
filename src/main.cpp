@@ -30,6 +30,7 @@ Adafruit_CCS811 ccs;
 //Constants
 const int CO_SEN = A3;
 const int FAN = 6;      //la broche relier au relai pour activer le ventilateur
+const int DELAY = 10000;
 
 //Variables
 float tmperature = 1000, humidite = 1000;
@@ -77,7 +78,7 @@ void loop()
     ClientMQTT.loop();     //continuer a ecouter s'il y'a des RPC
 
     newTime = millis();
-    if (newTime - oldTime > 2000){
+    if (newTime - oldTime > DELAY){
         oldTime = newTime;
 
         
@@ -100,7 +101,7 @@ void loop()
 
         /******************************* Gerer les actuateurs *******************************/
         
-        if (tmperature > 26 || etatFanStr == "true" || co2 > 1500){         //activer le filtre selon la tempperature
+        if (tmperature > 26 || etatFanStr == "true" || co2 > valDeclanchCO2){         //activer le filtre selon la tempperature
             etatFan = 1;
             digitalWrite(FAN, HIGH);
         }else{
